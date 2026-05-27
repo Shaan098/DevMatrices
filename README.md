@@ -8,7 +8,8 @@ A full-stack engineering productivity analytics platform built with the MERN sta
 
 ## Continuous Integration
 
-- The project includes a GitHub Actions workflow at `.github/workflows/ci-cd.yml` that builds the client and server and pushes Docker images to GitHub Container Registry on `main`.
+- The project includes a GitHub Actions workflow at `.github/workflows/ci-cd.yml` that builds the client and server and pushes Docker images to Docker Hub on `main`.
+- To push images to Docker Hub, add `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` as repository secrets.
 - To enable automatic deploys to a remote host, set the secrets `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`, and `DEPLOY_PATH` in your repository settings.
 
 ---
