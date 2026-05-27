@@ -74,29 +74,43 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/pepproject-client:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/pepproject-client:${{ github.sha }}
 
-  deploy:
-    name: Deploy to remote host
+  deploy_azure:
+    name: Deploy to Azure Web App (optional)
     needs: publish
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && env.DEPLOY_HOST != ''
-    env:
-      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+    if: secrets.AZURE_WEBAPP_PUBLISH_PROFILE != ''
     steps:
-      - name: Wait for images to be available
-        run: echo "Deploying to $DEPLOY_HOST"
-
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v0.1.7
+      - name: Deploy server to Azure Web App
+        uses: azure/webapps-deploy@v2
         with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          port: ${{ secrets.DEPLOY_PORT }}
-          script: |
-            set -e
-            cd ${{ secrets.DEPLOY_PATH }} || exit 1
-            docker compose pull || true
-            docker compose up -d --remove-orphans
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/pepproject-server:latest
+
+  deploy_digitalocean:
+    name: Deploy to DigitalOcean App Platform (optional)
+    needs: publish
+    runs-on: ubuntu-latest
+    if: secrets.DO_API_TOKEN != ''
+    steps:
+      - name: Authenticate doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DO_API_TOKEN }}
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Update DigitalOcean App
+        run: |
+          if [ -n "${{ secrets.DO_APP_ID }}" ]; then
+            echo "Attempting to update DO App ${{ secrets.DO_APP_ID }} using .do/app.yaml (if present)"
+            doctl apps update "${{ secrets.DO_APP_ID }}" --spec .do/app.yaml || echo "No .do/app.yaml or update failed — please create an App spec or update via the DO dashboard"
+          else
+            echo "Set DO_APP_ID secret and provide .do/app.yaml to update App Platform via doctl"
+          fi
 
