@@ -1,8 +1,15 @@
+# CI Status: ![CI](https://github.com/Shaan098/DevMatrices/actions/workflows/ci-cd.yml/badge.svg)
+
 # 📊 GitHub Organization Analytics Dashboard
 
 A full-stack engineering productivity analytics platform built with the MERN stack. Visualize commit trends, PR cycle times, code review stats, team velocity, contributor insights, and repository health — all in a beautiful dark-mode dashboard.
 
 ![Tech Stack](https://img.shields.io/badge/React-19-61dafb?logo=react) ![Node.js](https://img.shields.io/badge/Node.js-20-68a063?logo=node.js) ![MongoDB](https://img.shields.io/badge/MongoDB-7-4db33d?logo=mongodb) ![Docker](https://img.shields.io/badge/Docker-Compose-2496ed?logo=docker)
+
+## Continuous Integration
+
+- The project includes a GitHub Actions workflow at `.github/workflows/ci-cd.yml` that builds the client and server and pushes Docker images to GitHub Container Registry on `main`.
+- To enable automatic deploys to a remote host, set the secrets `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`, and `DEPLOY_PATH` in your repository settings.
 
 ---
 
