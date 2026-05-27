@@ -47,12 +47,12 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Login to Docker Hub
+      - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
-          registry: docker.io
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push server image
         uses: docker/build-push-action@v4
@@ -61,8 +61,8 @@ jobs:
           file: ./server/Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/pepproject-server:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/pepproject-server:${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/pepproject-server:latest
+            ghcr.io/${{ github.repository_owner }}/pepproject-server:${{ github.sha }}
 
       - name: Build and push client image
         uses: docker/build-push-action@v4
@@ -71,46 +71,5 @@ jobs:
           file: ./client/Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/pepproject-client:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/pepproject-client:${{ github.sha }}
-
-  deploy_azure:
-    name: Deploy to Azure Web App (optional)
-    needs: publish
-    runs-on: ubuntu-latest
-    if: secrets.AZURE_WEBAPP_PUBLISH_PROFILE != ''
-    steps:
-      - name: Deploy server to Azure Web App
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          images: ${{ secrets.DOCKERHUB_USERNAME }}/pepproject-server:latest
-
-  deploy_digitalocean:
-    name: Deploy to DigitalOcean App Platform (optional)
-    needs: publish
-    runs-on: ubuntu-latest
-    if: secrets.DO_API_TOKEN != ''
-    steps:
-      - name: Authenticate doctl
-        uses: digitalocean/action-doctl@v2
-        with:
-          token: ${{ secrets.DO_API_TOKEN }}
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          registry: docker.io
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Update DigitalOcean App
-        run: |
-          if [ -n "${{ secrets.DO_APP_ID }}" ]; then
-            echo "Attempting to update DO App ${{ secrets.DO_APP_ID }} using .do/app.yaml (if present)"
-            doctl apps update "${{ secrets.DO_APP_ID }}" --spec .do/app.yaml || echo "No .do/app.yaml or update failed — please create an App spec or update via the DO dashboard"
-          else
-            echo "Set DO_APP_ID secret and provide .do/app.yaml to update App Platform via doctl"
-          fi
-
+            ghcr.io/${{ github.repository_owner }}/pepproject-client:latest
+            ghcr.io/${{ github.repository_owner }}/pepproject-client:${{ github.sha }}
