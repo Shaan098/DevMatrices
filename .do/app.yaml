@@ -1,0 +1,43 @@
+# DigitalOcean App Platform spec (minimal). Replace placeholders before use.
+# - Set `DOCKERHUB_USERNAME` to your Docker Hub user/org
+# - Optionally create a managed database and update MONGODB_URI
+
+name: pepproject
+region: nyc3
+services:
+  - name: client
+    image:
+      registry: docker.io
+      repository: YOUR_DOCKERHUB_USERNAME/pepproject-client
+      tag: latest
+    http_port: 80
+    instance_size_slug: basic-xxs
+    instance_count: 1
+    routes:
+      - path: /
+
+  - name: server
+    image:
+      registry: docker.io
+      repository: YOUR_DOCKERHUB_USERNAME/pepproject-server
+      tag: latest
+    http_port: 5000
+    instance_size_slug: basic-xxs
+    instance_count: 1
+    envs:
+      - key: NODE_ENV
+        value: production
+      - key: CLIENT_URL
+        value: https://<your-app-domain> # update to your DO app domain or public client URL
+      - key: MONGODB_URI
+        value: mongodb://<mongo-host>:27017/github-analytics
+      - key: GITHUB_CLIENT_ID
+        value: ""
+      - key: GITHUB_CLIENT_SECRET
+        value: ""
+
+# Optional: static components, databases, and other resources can be added here.
+# To deploy with doctl: set DO_API_TOKEN and DO_APP_ID (or create the app using this spec):
+#   doctl apps create --spec .do/app.yaml
+# To update an existing app by ID using this spec:
+#   doctl apps update <APP_ID> --spec .do/app.yaml
