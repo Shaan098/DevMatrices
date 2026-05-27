@@ -8,7 +8,7 @@ services:
   - name: client
     image:
       registry: docker.io
-      repository: YOUR_DOCKERHUB_USERNAME/pepproject-client
+      repository: shaan098/pepproject-client
       tag: latest
     http_port: 80
     instance_size_slug: basic-xxs
@@ -19,7 +19,7 @@ services:
   - name: server
     image:
       registry: docker.io
-      repository: YOUR_DOCKERHUB_USERNAME/pepproject-server
+      repository: shaan098/pepproject-server
       tag: latest
     http_port: 5000
     instance_size_slug: basic-xxs
